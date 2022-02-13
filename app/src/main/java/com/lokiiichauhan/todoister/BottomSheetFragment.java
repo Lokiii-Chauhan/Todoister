@@ -2,6 +2,7 @@ package com.lokiiichauhan.todoister;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import com.lokiiichauhan.todoister.model.Task;
 import com.lokiiichauhan.todoister.model.TaskViewModel;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class BottomSheetFragment extends BottomSheetDialogFragment {
     private EditText enterTodo;
@@ -31,6 +33,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     private ImageButton saveButton;
     private CalendarView calendarView;
     private Group calenderGroup;
+    private Date dueDate;
+    Calendar calendar = Calendar.getInstance();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,10 +63,24 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        calenderButton.setOnClickListener(view2 -> {
+            calenderGroup.setVisibility(calenderGroup.getVisibility() ==
+                    View.GONE ? View.VISIBLE : View.GONE);
+        });
+
+        calendarView.setOnDateChangeListener((calendarView, year, month, dayOfMonth) -> {
+
+            calendar.clear();
+            calendar.set(year, month, dayOfMonth);
+            dueDate = calendar.getTime();
+
+            Log.d("Cal", "onViewCreated: " + (month + 1) + dayOfMonth);
+        });
+
         saveButton.setOnClickListener(view1 -> {
             String task = enterTodo.getText().toString().trim();
-            if (!TextUtils.isEmpty(task)){
-                Task myTask = new Task(task, Priority.HIGH, Calendar.getInstance().getTime(),
+            if (!TextUtils.isEmpty(task) && dueDate != null){
+                Task myTask = new Task(task, Priority.HIGH, dueDate,
                         Calendar.getInstance().getTime(), false);
                 TaskViewModel.insert(myTask);
             }
