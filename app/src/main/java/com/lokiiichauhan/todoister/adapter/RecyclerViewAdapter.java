@@ -1,5 +1,7 @@
 package com.lokiiichauhan.todoister.adapter;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +25,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private final OnTodoClickListner todoClickListner;
 
 
-
     public RecyclerViewAdapter(List<Task> taskList, OnTodoClickListner onTodoClickListner) {
         this.taskList = taskList;
         this.todoClickListner = onTodoClickListner;
@@ -38,13 +39,23 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder, int position) {
-
         Task task = taskList.get(position);
         String formatted = Utils.formatDate(task.getDueDate());
 
+        ColorStateList colorStateList =
+                new ColorStateList(new int[][]{
+                        new int[] {-android.R.attr.state_enabled},
+                        new int[] {-android.R.attr.state_enabled}
+                }, new int[] {
+                        Color.LTGRAY,  //disabled State
+                        Utils.priorityColor(task)
+                });
+
         holder.task.setText(task.getTask());
         holder.chip.setText(formatted);
-
+        holder.chip.setTextColor(Utils.priorityColor(task));
+        holder.chip.setChipIconTint(colorStateList);
+        holder.radioButton.setButtonTintList(colorStateList);
     }
 
     @Override
@@ -75,7 +86,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         @Override
         public void onClick(View v) {
             Task currTask;
-
             int id = v.getId();
             if (id == R.id.todo_row_layout){
                 currTask = taskList.get(getAdapterPosition());
