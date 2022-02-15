@@ -20,11 +20,14 @@ import java.util.List;
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
     private final List<Task> taskList;
+    private final OnTodoClickListner todoClickListner;
 
-    public RecyclerViewAdapter(List<Task> taskList) {
+
+
+    public RecyclerViewAdapter(List<Task> taskList, OnTodoClickListner onTodoClickListner) {
         this.taskList = taskList;
+        this.todoClickListner = onTodoClickListner;
     }
-
 
     @NonNull
     @Override
@@ -49,11 +52,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return taskList.size();
     }
 
-    public class  ViewHolder extends RecyclerView.ViewHolder{
+    public class  ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public AppCompatRadioButton radioButton;
         public AppCompatTextView task;
         public Chip chip;
+        OnTodoClickListner onTodoClickListner;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,6 +65,25 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             radioButton = itemView.findViewById(R.id.todo_radio_button);
             task = itemView.findViewById(R.id.todo_row_todo);
             chip = itemView.findViewById(R.id.todo_row_chip);
+            this.onTodoClickListner = todoClickListner;
+
+            itemView.setOnClickListener(this);
+            radioButton.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View v) {
+            Task currTask;
+
+            int id = v.getId();
+            if (id == R.id.todo_row_layout){
+                currTask = taskList.get(getAdapterPosition());
+                onTodoClickListner.onTodoClick(getAdapterPosition(), currTask);
+            }else if (id == R.id.todo_radio_button){
+                currTask = taskList.get(getAdapterPosition());
+                onTodoClickListner.onTodoRadioClicked(currTask);
+            }
         }
     }
 }

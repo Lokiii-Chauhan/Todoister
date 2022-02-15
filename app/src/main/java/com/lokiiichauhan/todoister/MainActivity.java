@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.lokiiichauhan.todoister.adapter.OnTodoClickListner;
 import com.lokiiichauhan.todoister.adapter.RecyclerViewAdapter;
 import com.lokiiichauhan.todoister.model.Priority;
 import com.lokiiichauhan.todoister.model.Task;
@@ -25,7 +26,7 @@ import com.lokiiichauhan.todoister.model.TaskViewModel;
 import java.util.Calendar;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnTodoClickListner {
 
     private static final String TAG = "item";
     private TaskViewModel taskViewModel;
@@ -70,9 +71,8 @@ public class MainActivity extends AppCompatActivity {
         
         taskViewModel.getAllTasks().observe(this, tasks -> {
 
-            adapter = new RecyclerViewAdapter(tasks);
+            adapter = new RecyclerViewAdapter(tasks,this);
             recyclerView.setAdapter(adapter);
-
 
         });
     }
@@ -103,5 +103,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onTodoClick(int adapterPosition, Task task) {
+        Log.d("Click", "onTodoClick: " + task.getTask());
+    }
+
+    @Override
+    public void onTodoRadioClicked(Task task) {
+        Log.d("Click", "onTodoClick: " + task.getTask());
+        TaskViewModel.delete(task);
+        adapter.notifyDataSetChanged();
     }
 }
