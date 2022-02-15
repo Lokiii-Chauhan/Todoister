@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.lokiiichauhan.todoister.adapter.OnTodoClickListner;
 import com.lokiiichauhan.todoister.adapter.RecyclerViewAdapter;
 import com.lokiiichauhan.todoister.model.Priority;
+import com.lokiiichauhan.todoister.model.SharedViewModel;
 import com.lokiiichauhan.todoister.model.Task;
 import com.lokiiichauhan.todoister.model.TaskViewModel;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements OnTodoClickListne
     private RecyclerViewAdapter adapter;
     private int counter;
     BottomSheetFragment bottomSheetFragment;
+    private SharedViewModel sharedViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements OnTodoClickListne
         taskViewModel = new ViewModelProvider
                 .AndroidViewModelFactory(this.getApplication())
                 .create(TaskViewModel.class);
+
+        sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -106,8 +110,10 @@ public class MainActivity extends AppCompatActivity implements OnTodoClickListne
     }
 
     @Override
-    public void onTodoClick(int adapterPosition, Task task) {
-        Log.d("Click", "onTodoClick: " + task.getTask());
+    public void onTodoClick(Task task) {
+        sharedViewModel.selectItem(task);
+        sharedViewModel.setIsEdit(true);
+        showBottomSheetDialog();
     }
 
     @Override

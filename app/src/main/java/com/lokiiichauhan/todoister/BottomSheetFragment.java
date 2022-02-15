@@ -14,12 +14,16 @@ import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.Group;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
 import com.lokiiichauhan.todoister.model.Priority;
+import com.lokiiichauhan.todoister.model.SharedViewModel;
 import com.lokiiichauhan.todoister.model.Task;
 import com.lokiiichauhan.todoister.model.TaskViewModel;
+import com.lokiiichauhan.todoister.util.Utils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -35,6 +39,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
     private Group calenderGroup;
     private Date dueDate;
     Calendar calendar = Calendar.getInstance();
+    private SharedViewModel sharedViewModel;
+    private boolean isEdit;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,6 +75,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
         calenderButton.setOnClickListener(view2 -> {
             calenderGroup.setVisibility(calenderGroup.getVisibility() ==
                     View.GONE ? View.VISIBLE : View.GONE);
+            Utils.hideSoftKeyboard(view2);
         });
 
         calendarView.setOnDateChangeListener((calendarView, year, month, dayOfMonth) -> {
@@ -85,7 +92,25 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
             if (!TextUtils.isEmpty(task) && dueDate != null){
                 Task myTask = new Task(task, Priority.HIGH, dueDate,
                         Calendar.getInstance().getTime(), false);
-                TaskViewModel.insert(myTask);
+
+                if (isEdit){
+                    Task updateTask = sharedViewModel.getSelectedItem().getValue();
+                    updateTask.setTask(task);
+                    updateTask.setDateCreated(Calendar.getInstance().getTime());
+                    updateTask.setPriority(Priority.HIGH);
+                    updateTask.setDueDate(dueDate);
+                    TaskViewModel.update(updateTask);
+                    sharedViewModel.setIsEdit(false);
+                }else {
+                    TaskViewModel.insert(myTask);
+                }
+                enterTodo.setText("");
+                if (this.isVisible()){
+                    this.dismiss();
+                }
+
+            }else {
+                Snackbar.make(saveButton, R.string.empty_field, Snackbar.LENGTH_SHORT).show();
             }
         });
     }
@@ -105,6 +130,19 @@ public class BottomSheetFragment extends BottomSheetDialogFragment implements Vi
             calendar.add(Calendar.DAY_OF_YEAR, 7);
             dueDate = calendar.getTime();
             Log.d("TIME", "onClick: " + dueDate.toString());
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        if (sharedViewModel.getSelectedItem().getValue() != null){
+            isEdit = sharedViewModel.getIsEdit();
+
+            Task task = sharedViewModel.getSelectedItem().getValue();
+            enterTodo.setText(task.getTask());
+            Log.d("My", "onViewCreated: " + task.getTask());
         }
     }
 }
